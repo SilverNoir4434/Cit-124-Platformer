@@ -12,8 +12,8 @@ public class Player : MonoBehaviour
     private float horizontalInput;
     // variable for holding getRigidBody component
     private Rigidbody rigidbodyComponent;
-
-
+    // variable for determining if you are grounded or jumping
+    private bool isGrounded;
 
     // Start is called before the first frame update
     void Start()
@@ -25,13 +25,24 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) == true) // gets input from spacebar, if pressed do the following
-        {
-            spaceKeyWasPressed = true;
-        }
-
         // collect horizontal input (by default a, d, left and right on keyboard, default value is 0)
         horizontalInput = Input.GetAxis("Horizontal");
+
+        
+        
+        if (Input.GetKeyDown(KeyCode.Space) == true) // gets input from spacebar, if pressed do the following
+        {
+            //checks if player is in the air, disallows them from jumping if so
+            if (isGrounded != true)
+            {
+                return;
+            } 
+            else
+            {
+                spaceKeyWasPressed = true;
+            }
+            
+        } 
     }
 
     // Fixed Update is called 100 times per second by default, helps keep physics standard
@@ -45,7 +56,21 @@ public class Player : MonoBehaviour
             rigidbodyComponent.AddForce(Vector3.up * 5, ForceMode.VelocityChange);
             spaceKeyWasPressed = false;
         }
-
+        // makes horizontal movement possible, using a and d for left and right by default
         rigidbodyComponent.velocity = new Vector3(horizontalInput, rigidbodyComponent.velocity.y, 0);
+    }
+
+    // monobehavior for entering collisions
+    private void OnCollisionEnter(Collision incomingCollisionData)
+    {
+        // isGrounded is set to true since the player is touching the ground
+        isGrounded = true;
+    }
+
+    // monobehavior for exiting collisions
+    private void OnCollisionExit(Collision outgoingCollisionData) 
+    {
+        // isGrounded is set to false since the player is in the air
+        isGrounded = false;
     }
 }
