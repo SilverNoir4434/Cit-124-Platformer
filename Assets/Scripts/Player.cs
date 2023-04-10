@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-
+using UnityEngine.Rendering;
 
 public class Player : MonoBehaviour
 {
@@ -12,8 +12,10 @@ public class Player : MonoBehaviour
     private float horizontalInput;
     // variable for holding getRigidBody component
     private Rigidbody rigidbodyComponent;
-    // variable for determining if you are grounded or jumping
-    private bool isGrounded;
+    // field for exposing ground check transform to unity editor
+    [SerializeField] private Transform groundCheckTransform;
+    // create a layerMask variable for the playerLayer which is called playerMask, exposed variable in Unity editor
+    [SerializeField] private LayerMask playerMask;
 
     // Start is called before the first frame update
     void Start()
@@ -28,26 +30,27 @@ public class Player : MonoBehaviour
         // collect horizontal input (by default a, d, left and right on keyboard, default value is 0)
         horizontalInput = Input.GetAxis("Horizontal");
 
-        
-        
-        if (Input.GetKeyDown(KeyCode.Space) == true) // gets input from spacebar, if pressed do the following
+        if (Input.GetKeyDown(KeyCode.Space) == true) // gets input from spacebar, if pressed player will jump
         {
-            //checks if player is in the air, disallows them from jumping if so
-            if (isGrounded != true)
-            {
-                return;
-            } 
-            else
-            {
-                spaceKeyWasPressed = true;
-            }
-            
-        } 
+            spaceKeyWasPressed = true;
+        }
     }
 
     // Fixed Update is called 100 times per second by default, helps keep physics standard
     private void FixedUpdate()
     {
+        
+        // makes horizontal movement possible, using a and d for left and right by default
+        rigidbodyComponent.velocity = new Vector3(horizontalInput, rigidbodyComponent.velocity.y, 0);
+
+        // checks for player collision with the ground using Physics.OverlapSphere
+        if (Physics.OverlapSphere(groundCheckTransform.position, 0.1f, playerMask).Length == 0)
+        {
+            return;
+        }
+
+        
+
         // Jump function; detects if player is pressing space, then jumps if they are
         if (spaceKeyWasPressed == true)
         {
@@ -56,21 +59,7 @@ public class Player : MonoBehaviour
             rigidbodyComponent.AddForce(Vector3.up * 5, ForceMode.VelocityChange);
             spaceKeyWasPressed = false;
         }
-        // makes horizontal movement possible, using a and d for left and right by default
-        rigidbodyComponent.velocity = new Vector3(horizontalInput, rigidbodyComponent.velocity.y, 0);
     }
 
-    // monobehavior for entering collisions
-    private void OnCollisionEnter(Collision incomingCollisionData)
-    {
-        // isGrounded is set to true since the player is touching the ground
-        isGrounded = true;
-    }
-
-    // monobehavior for exiting collisions
-    private void OnCollisionExit(Collision outgoingCollisionData) 
-    {
-        // isGrounded is set to false since the player is in the air
-        isGrounded = false;
-    }
+    
 }
