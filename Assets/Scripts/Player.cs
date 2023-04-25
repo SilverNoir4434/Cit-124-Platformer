@@ -16,12 +16,23 @@ public class Player : MonoBehaviour
     [SerializeField] private Transform groundCheckTransform;
     // create a layerMask variable for the playerLayer which is called playerMask, exposed variable in Unity editor
     [SerializeField] private LayerMask playerMask;
+    // variable to determine if player has lost the game
+    private bool gameOver;
+    // variable to determine if player has won the game
+    private bool gameWon;
+    [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private GameObject gameWonPanel;
 
     // Start is called before the first frame update
     void Start()
     {
         // set the rigidbodyComponent to what is returned by getComponent<RigidBody>();
         rigidbodyComponent = GetComponent<Rigidbody>();
+
+        // reset win/loss variables, restart time
+        gameOver = false;
+        gameWon = false;
+        Time.timeScale = 1;
     }
 
     // Update is called once per frame
@@ -33,6 +44,17 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) == true) // gets input from spacebar, if pressed player will jump
         {
             spaceKeyWasPressed = true;
+        }
+
+        // if the game ends either through defeat or victory, stop time and display the appropriate
+        // screen
+        if (gameOver || gameWon)
+        {
+            Time.timeScale = 0;
+            if (gameOver)
+                gameOverPanel.SetActive(true);
+            if (gameWon)
+                gameWonPanel.SetActive(true);
         }
     }
 
@@ -61,5 +83,17 @@ public class Player : MonoBehaviour
         }
     }
 
-    
+    // Trigger for Game Over and Victory screens
+    private void OnTriggerEnter(Collider other)
+    {
+        // if the player collides with a GameOverTile, they lose
+        if (other.gameObject.CompareTag("GameOverTile"))
+        {
+            gameOver = true;
+        }
+        if (other.gameObject.CompareTag("VictoryTile"))
+        {
+            gameWon = true;
+        }
+    }
 }
